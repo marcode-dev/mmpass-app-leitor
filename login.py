@@ -38,10 +38,13 @@ def tela_login(page, ir_home):
 
         r = api_login(email.value, senha.value)
         print(r)
-        if "usuario" in r:
-            print(r["usuario"])
+        if r and r.get("status") == "sucesso":
+            print("Login OK")
+        else:
+            print(r.get("msg"))
+            
 
-        if r["status"] == "ok":
+        if r["status"] == "sucesso":
             usuario_logado.update(r["usuario"])
             ir_home(page)
         else:
