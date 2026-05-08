@@ -1,5 +1,4 @@
 flet
 requests
 opencv-python
-pyzbar
 bcrypt

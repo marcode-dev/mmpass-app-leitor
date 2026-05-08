@@ -1,10 +1,9 @@
 import flet as ft
 from components import *
 import cv2
-from pyzbar.pyzbar import decode
 import threading
 import time
-from services.api import login as validar_qr
+from services.api import login as validar_qr    
 
 # -------------------------
 # SCAN
@@ -20,51 +19,70 @@ def tela_scan(evento, contador, porcento, mural, page, abrir_evento):
         rodando = False
         abrir_evento(evento, page)
 
+    
     def scan():
         nonlocal rodando, ultimo
-        cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-        
+
+        cap = cv2.VideoCapture(0)
+        detector = cv2.QRCodeDetector()
+
         if not cap.isOpened():
             status.value = "Erro ao acessar câmera"
             page.update()
             return
-        
         while rodando:
             ret, frame = cap.read()
             if not ret:
                 break
 
-            for obj in decode(frame):
-                qr = obj.data.decode("utf-8")
-
+            # Detecta QR Code
+            data, bbox, _ = detector.detectAndDecode(frame)
+            # Se encontrou QR
+            if data:
+                qr = data.strip()
+                # Evita leituras repetidas
                 if qr == ultimo:
+                    cv2.imshow("ESC para sair", frame)
+                    if cv2.waitKey(1) == 27:
+                        break
                     continue
-
                 ultimo = qr
-                if qr == ultimo:
-                    continue
-                # time.sleep(1)
 
+                # Faz validação
                 r = validar_qr(qr, evento["id"])
 
                 if r["status"] == "ok":
-                    mural.controls.insert(0, ft.Text(f"✔ {r['nome']}", color="green"))
-
+                    mural.controls.insert(
+                        0,
+                        ft.Text(f"✔ {r['nome']}", color="green")
+                    )
                     total = r["total"]
                     contador.value = str(total)
-                    porcento.value = f"{int((total/evento['capacidade'])*100)}%"
-
+                    porcento.value = (
+                        f"{int((total/evento['capacidade'])*100)}%"
+                    )
                     status.value = "Entrada liberada"
                 else:
-                    mural.controls.insert(0, ft.Text(f"❌ {r['msg']}", color="red"))
+                    mural.controls.insert(
+                        0,
+                        ft.Text(f"❌ {r['msg']}", color="red")
+                    )
                     status.value = r["msg"]
-
                 page.update()
+                # Pequeno delay para evitar múltiplas leituras
+                time.sleep(1)
+
+            # Desenha área detectada
+            if bbox is not None:
+                pontos = bbox.astype(int)
+                for i in range(len(pontos[0])):
+                    pt1 = tuple(pontos[0][i])
+                    pt2 = tuple(pontos[0][(i + 1) % len(pontos[0])])
+                    cv2.line(frame, pt1, pt2, (0, 255, 0), 2)
 
             cv2.imshow("ESC para sair", frame)
             if cv2.waitKey(1) == 27:
                 break
-
         cap.release()
         cv2.destroyAllWindows()
 
