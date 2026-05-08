@@ -28,7 +28,7 @@ def tela_login(page, ir_home):
 
     mensagem = ft.Text("", color="red")
 
-    def login_click(e):
+    async def login_click(e):
         from state import usuario_logado
 
         if not email.value or not senha.value:
@@ -37,19 +37,17 @@ def tela_login(page, ir_home):
             return
 
         r = api_login(email.value, senha.value)
-        print(r)
-        if r and r.get("status") == "sucesso":
-            print("Login OK")
-        else:
-            print(r.get("msg"))
-            
-
+        
         if r["status"] == "sucesso":
+            import json
             usuario_logado.update(r["usuario"])
-            ir_home(page)
+            # Salva no navegador para persistir após reload
+            await page.shared_preferences.set("usuario", json.dumps(r["usuario"]))
+            await ir_home(page)
         else:
             mensagem.value = r.get("msg", "Erro no login")
             page.update()
+
 
     card_login = ft.Container(
         width=320,

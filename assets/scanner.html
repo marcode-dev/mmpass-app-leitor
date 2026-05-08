@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMPass - Scanner de QR Code</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #D1F5F7 0%, #F2E9F3 100%);
+            color: #1F2937;
+        }
+        .container {
+            width: 90%;
+            max-width: 500px;
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 { color: #8B5CF6; font-size: 24px; margin-bottom: 10px; }
+        p { color: #6B7280; font-size: 14px; margin-bottom: 20px; }
+        #reader { 
+            width: 100%; 
+            min-height: 250px;
+            border-radius: 20px; 
+            overflow: hidden;
+            border: 2px dashed #8B5CF6 !important;
+            background: #F3F4F6;
+        }
+        #reader video {
+            width: 100% !important;
+            height: auto !important;
+            border-radius: 20px !important;
+            object-fit: cover;
+        }
+
+        #reader__dashboard_section_csr button {
+            background: #8B5CF6 !important;
+            color: white !important;
+            border: none !important;
+            padding: 10px 20px !important;
+            border-radius: 10px !important;
+            cursor: pointer !important;
+            font-weight: bold !important;
+        }
+        .status {
+            margin-top: 20px;
+            font-weight: 600;
+            color: #10B981;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MMPass</h1>
+        <p>Aponte a câmera para o QR Code do ingresso</p>
+        <div id="reader"></div>
+        <div class="status" id="status">✔ Código lido! Retornando...</div>
+    </div>
+
+    <script>
+        // Pega o ID do evento da URL atual
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventoId = urlParams.get('evento_id');
+        let isScanned = false;
+
+        // Segurança: Câmera só funciona em HTTPS ou Localhost
+        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            alert("AVISO: A câmera pode não abrir porque você não está usando uma conexão segura (HTTPS). Se estiver no Render, certifique-se de acessar via https://");
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            if (isScanned) return;
+            isScanned = true;
+
+            const statusEl = document.getElementById('status');
+            statusEl.style.display = 'block';
+            statusEl.innerText = "✔ Código lido! Validando ingresso...";
+            
+            // Redireciona de volta para o app Flet passando o código e o ID do evento
+            // Lógica robusta para encontrar a raiz do app (removendo assets/scanner.html do path)
+            const currentPath = window.location.pathname;
+            const basePath = currentPath.substring(0, currentPath.lastIndexOf('/assets/')) || "";
+            const backUrl = window.location.origin + basePath + "/?code=" + encodeURIComponent(decodedText) + "&evento_id=" + eventoId;
+            
+            setTimeout(() => {
+                window.location.href = backUrl;
+            }, 600);
+
+        }
+
+
+        function onScanFailure(error) {
+            // Silencioso por padrão, mas pode ser útil para debug
+            // console.warn(`Code scan error = ${error}`);
+        }
+
+        async function startScanner() {
+            try {
+                const cameras = await Html5Qrcode.getCameras();
+                if (cameras && cameras.length > 0) {
+                    let html5QrcodeScanner = new Html5QrcodeScanner(
+                        "reader",
+                        { 
+                            fps: 20, 
+                            qrbox: {width: 250, height: 250},
+                            aspectRatio: 1.0,
+                            rememberLastUsedCamera: true,
+                            supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+                        },
+                        /* verbose= */ false);
+                    
+                    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+                } else {
+                    alert("Nenhuma câmera encontrada no seu dispositivo.");
+                }
+            } catch (err) {
+                console.error("Erro ao iniciar scanner:", err);
+                alert("Erro ao acessar a câmera. Verifique se deu permissão no navegador.");
+            }
+        }
+
+        // Inicia o processo
+        startScanner();
+
+    </script>
+
+</body>
+</html>

@@ -1,94 +1,81 @@
 import flet as ft
 from components import *
-import cv2
-import threading
-import time
-from services.api import login as validar_qr    
+from services.api import validar_qr    
 
 # -------------------------
 # SCAN
 # -------------------------
-def tela_scan(evento, contador, porcento, mural, page, abrir_evento):
-    rodando = True
-    ultimo = None
-
+async def tela_scan(evento, contador, porcento, mural, page, abrir_evento):
     status = ft.Text("Aguardando leitura...", size=12, color="#6B7280")
 
-    def voltar(e):
-        nonlocal rodando
-        rodando = False
-        abrir_evento(evento, page)
+    async def voltar(e):
+        # Desinscreve para evitar múltiplas execuções se a tela for aberta novamente
+        page.pubsub.unsubscribe_all()
+        await abrir_evento(evento, page)
 
-    
-    def scan():
-        nonlocal rodando, ultimo
-
-        cap = cv2.VideoCapture(0)
-        detector = cv2.QRCodeDetector()
-
-        if not cap.isOpened():
-            status.value = "Erro ao acessar câmera"
-            page.update()
+    async def processar_codigo(qr):
+        # Evita processar se não for um código válido
+        if not qr:
             return
-        while rodando:
-            ret, frame = cap.read()
-            if not ret:
-                break
+            
+        # Faz validação
+        r = validar_qr(qr, evento["id"])
 
-            # Detecta QR Code
-            data, bbox, _ = detector.detectAndDecode(frame)
-            # Se encontrou QR
-            if data:
-                qr = data.strip()
-                # Evita leituras repetidas
-                if qr == ultimo:
-                    cv2.imshow("ESC para sair", frame)
-                    if cv2.waitKey(1) == 27:
-                        break
-                    continue
-                ultimo = qr
+        if r["status"] == "ok":
+            mural.controls.insert(
+                0,
+                ft.Container(
+                    content=ft.Text(f"✔ {r['nome']}", color="green", weight="bold"),
+                    animate_opacity=300
+                )
+            )
+            total = r["total"]
+            contador.value = str(total)
+            porcento.value = (
+                f"{int((total/evento['capacidade'])*100)}%"
+            )
+            status.value = f"Liberado: {r['nome']}"
+            status.color = "green"
+        else:
+            mural.controls.insert(
+                0,
+                ft.Text(f"❌ {r['msg']}", color="red")
+            )
+            status.value = r["msg"]
+            status.color = "red"
+        
+        page.update()
 
-                # Faz validação
-                r = validar_qr(qr, evento["id"])
+    # Se inscreve para receber os códigos vindos do scanner via JS Bridge (se suportado)
+    try:
+        page.pubsub.subscribe(processar_codigo)
+    except:
+        pass
 
-                if r["status"] == "ok":
-                    mural.controls.insert(
-                        0,
-                        ft.Text(f"✔ {r['nome']}", color="green")
-                    )
-                    total = r["total"]
-                    contador.value = str(total)
-                    porcento.value = (
-                        f"{int((total/evento['capacidade'])*100)}%"
-                    )
-                    status.value = "Entrada liberada"
-                else:
-                    mural.controls.insert(
-                        0,
-                        ft.Text(f"❌ {r['msg']}", color="red")
-                    )
-                    status.value = r["msg"]
-                page.update()
-                # Pequeno delay para evitar múltiplas leituras
-                time.sleep(1)
+    async def iniciar_leitura(e):
+        status.value = "Abrindo câmera..."
+        status.color = "#6B7280"
+        page.update()
 
-            # Desenha área detectada
-            if bbox is not None:
-                pontos = bbox.astype(int)
-                for i in range(len(pontos[0])):
-                    pt1 = tuple(pontos[0][i])
-                    pt2 = tuple(pontos[0][(i + 1) % len(pontos[0])])
-                    cv2.line(frame, pt1, pt2, (0, 255, 0), 2)
 
-            cv2.imshow("ESC para sair", frame)
-            if cv2.waitKey(1) == 27:
-                break
-        cap.release()
-        cv2.destroyAllWindows()
-
+    # ---------------------------------------------------------
+    # LÓGICA DE RETORNO VIA URL (COMPATIBILIDADE)
+    # ---------------------------------------------------------
+    try:
+        query_code = page.query.get("code") if hasattr(page.query, "get") else None
+        query_ev_id = page.query.get("evento_id") if hasattr(page.query, "get") else None
+    except:
+        query_code = None
+        query_ev_id = None
     
+    if query_code and str(query_ev_id) == str(evento["id"]):
+        # Se voltamos do scanner via redirecionamento
+        await processar_codigo(query_code)
+    # ---------------------------------------------------------
 
     # ---------------- UI BONITA ----------------
+
+
 
     area_scan = ft.Container(
         height=220,
@@ -99,28 +86,32 @@ def tela_scan(evento, contador, porcento, mural, page, abrir_evento):
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             alignment=ft.MainAxisAlignment.CENTER,
             controls=[
-                ft.Text("⌁ ⌁", size=30, color="#9CA3AF"),
+                ft.Icon(ft.Icons.QR_CODE, size=50, color="#9CA3AF"),
+                ft.Text("Scanner Browser Ativo", size=16, weight="bold", color="#4B5563"),
                 status
             ]
         )
     )
 
-    botao_scan = ft.Container(
-        height=50,
-        border_radius=25,
-        alignment=ft.Alignment(0, 0),
-        gradient=ft.LinearGradient(
-            colors=["#5EEAD4", "#A78BFA"]
-        ),
-        on_click=lambda e: threading.Thread(target=scan, daemon=True).start(),
+    botao_scan = ft.ElevatedButton(
         content=ft.Row(
             alignment=ft.MainAxisAlignment.CENTER,
             controls=[
-                ft.Text("📷", size=16),
-                ft.Text("Iniciar leitura", color="white", weight="bold")
+                ft.Icon(ft.Icons.CAMERA_ALT, color="white", size=20),
+                ft.Text("Abrir Câmera no Navegador", color="white", weight="bold")
             ]
-        )
+        ),
+        bgcolor="#5EEAD4",
+        style=ft.ButtonStyle(
+            shape=ft.RoundedRectangleBorder(radius=25),
+            padding=15,
+        ),
+        # A propriedade 'url' é nativa para abrir links em novas abas
+        url=f"scanner.html?evento_id={evento['id']}",
+        on_click=iniciar_leitura
     )
+
+
 
     return ft.Stack([
         fundo(),
@@ -158,7 +149,7 @@ def tela_scan(evento, contador, porcento, mural, page, abrir_evento):
                         ),
 
                         ft.Text(
-                            "Aponte a câmera para o QR Code",
+                            "A verificação agora é feita via navegador para maior compatibilidade.",
                             size=11,
                             color="#9CA3AF",
                             text_align="center"
@@ -177,7 +168,7 @@ def tela_scan(evento, contador, porcento, mural, page, abrir_evento):
                             content=ft.Row(
                                 alignment=ft.MainAxisAlignment.CENTER,
                                 controls=[
-                                    ft.Text("🖼"),
+                                    ft.Icon(ft.Icons.IMAGE, size=16, color="#6B7280"),
                                     ft.Text("Selecionar da Galeria", size=12)
                                 ]
                             )

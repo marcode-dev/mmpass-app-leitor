@@ -5,7 +5,7 @@ from scan import tela_scan
 # -------------------------
 # EVENTO
 # -------------------------
-def tela_evento(evento, page, abrir_evento, ir_home):
+async def tela_evento(evento, page, abrir_evento, ir_home):
     total = evento.get("ingressos_vendidos", 0)
     capacidade = evento.get("capacidade", 100)
 
@@ -15,9 +15,12 @@ def tela_evento(evento, page, abrir_evento, ir_home):
     
     mural = ft.Column(spacing=5)
 
-    def ir_scan(e):
+    async def on_back(e):
+        await ir_home(page)
+
+    async def ir_scan(e):
         conteudo.controls.clear()
-        conteudo.controls.append(tela_scan(evento, contador, porcento, mural, page, abrir_evento))
+        conteudo.controls.append(await tela_scan(evento, contador, porcento, mural, page, abrir_evento))
         page.update()
 
     # Card Centralizado
@@ -39,7 +42,7 @@ def tela_evento(evento, page, abrir_evento, ir_home):
                 # Cabeçalho com botão voltar
                 ft.Row(
                     alignment=ft.MainAxisAlignment.START,
-                    controls=[botao_voltar(lambda e: ir_home(page))]
+                    controls=[botao_voltar(on_back)]
                 ),
                 
                 # Título do Evento
@@ -94,7 +97,7 @@ def tela_evento(evento, page, abrir_evento, ir_home):
         )
     )
 
-    return ft.Stack([
+    layout = ft.Stack([
         fundo(), # Mantém o fundo de bolhas consistente
         ft.Container(
             expand=True,
@@ -102,3 +105,18 @@ def tela_evento(evento, page, abrir_evento, ir_home):
             content=card_evento
         )
     ])
+
+    # Se viemos de um scan redirecionado, abre a tela de scan automaticamente
+    try:
+        q_code = page.query.get("code") if hasattr(page.query, "get") else None
+        q_ev_id = page.query.get("evento_id") if hasattr(page.query, "get") else None
+    except:
+        q_code = None
+        q_ev_id = None
+
+    if q_code and str(q_ev_id) == str(evento["id"]):
+        await ir_scan(None)
+
+
+    return layout
+

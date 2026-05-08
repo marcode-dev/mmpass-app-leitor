@@ -6,7 +6,7 @@ from services.api import get_eventos
 # HOME  
 # -------------------------
 
-def tela_home(page, abrir_evento, logout):
+async def tela_home(page, abrir_evento, logout):
     from state import usuario_logado
     eventos = get_eventos(usuario_logado["id"])
     nome = usuario_logado.get("nome", "Usuário")
@@ -23,6 +23,9 @@ def tela_home(page, abrir_evento, logout):
         )
 
     for e in eventos:
+        async def on_evento_click(ev_target, ev_data=e):
+            await abrir_evento(ev_data, page)
+
         lista.controls.append(
             ft.Container(
                 padding=12,
@@ -33,7 +36,7 @@ def tela_home(page, abrir_evento, logout):
                     color="#10000000",
                     offset=ft.Offset(0, 4)
                 ),
-                on_click=lambda _, ev=e: abrir_evento(ev, page),
+                on_click=on_evento_click,
                 content=ft.Row(
                     spacing=10,
                     controls=[
@@ -64,7 +67,10 @@ def tela_home(page, abrir_evento, logout):
             )
         )
 
-    return ft.Stack([
+    async def on_logout_click(e):
+        await logout(page)
+
+    layout = ft.Stack([
         fundo(),
 
         ft.Container(
@@ -99,7 +105,7 @@ def tela_home(page, abrir_evento, logout):
                                 padding=ft.padding.symmetric(horizontal=12, vertical=6),
                                 border_radius=20,
                                 bgcolor="#FEE2E2",
-                                on_click=lambda e: logout(e, page),
+                                on_click=on_logout_click,
                                 content=ft.Text(
                                     "Sair",
                                     color="red",
@@ -115,3 +121,19 @@ def tela_home(page, abrir_evento, logout):
             )
         )
     ])
+
+    # Se viemos de um scan, abre o evento automaticamente
+    try:
+        ev_id_query = page.query.get("evento_id") if hasattr(page.query, "get") else None
+    except:
+        ev_id_query = None
+        
+    if ev_id_query:
+        for e in eventos:
+            if str(e["id"]) == str(ev_id_query):
+                # Abre o evento que estávamos escaneando
+                await abrir_evento(e, page)
+                break
+                
+    return layout
+
