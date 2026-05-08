@@ -50,36 +50,59 @@ def tela_login(page, ir_home):
 
 
     card_login = ft.Container(
-        width=320,
-        padding=25,
-        border_radius=30,
+        width=340,
+        padding=35,
+        border_radius=28,
         bgcolor="#FFFFFF",
-        border=ft.border.all(1, "#F1F5F9"),
         shadow=ft.BoxShadow(
-            blur_radius=25,
-            color="#12000000",
-            offset=ft.Offset(0, 8)
+            blur_radius=40,
+            color="#00000033",
+            offset=ft.Offset(0, 20)
         ),
         content=ft.Column(
             tight=True,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            spacing=20,
             controls=[
-                ft.Text("MMReader", size=36, weight="w700", color="#5EEAD4"),
-                ft.Text(
-                    "Sua próxima experiência começa aqui.",
-                    size=12,
-                    color="#9CA3AF",
-                    text_align="center"
+                ft.Column(
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    spacing=5,
+                    controls=[
+                        ft.Text("MMPass", size=42, weight="w800", color="#A78BFA"),
+                        ft.Text(
+                            "REDE DE ACESSO",
+                            size=12,
+                            weight="w600",
+                            color="#94A3B8"
+
+                        ),
+                    ]
                 ),
-                ft.Container(height=15),
-                email,
-                senha,
+                ft.Column(
+                    spacing=12,
+                    controls=[
+                        email,
+                        senha,
+                    ]
+                ),
                 mensagem,
-                ft.Container(height=8),
-                botao_gradiente("Entrar", login_click),
+                ft.Column(
+                    spacing=10,
+                    controls=[
+                        botao_gradiente("Acessar Painel", login_click),
+                        ft.Text(
+                            "Esqueceu sua senha?",
+                            size=12,
+                            color="#64748B",
+                            text_align="center",
+                            weight="w500"
+                        ),
+                    ]
+                )
             ]
         )
     )
+
 
     return ft.Stack(
         expand=True,

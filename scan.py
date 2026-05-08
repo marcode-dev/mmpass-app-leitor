@@ -57,7 +57,6 @@ async def tela_scan(evento, contador, porcento, mural, page, abrir_evento):
         status.color = "#6B7280"
         page.update()
 
-
     # ---------------------------------------------------------
     # LÓGICA DE RETORNO VIA URL (COMPATIBILIDADE)
     # ---------------------------------------------------------
@@ -73,22 +72,29 @@ async def tela_scan(evento, contador, porcento, mural, page, abrir_evento):
         await processar_codigo(query_code)
     # ---------------------------------------------------------
 
-    # ---------------- UI BONITA ----------------
-
-
+    # ---------------- UI PREMIUM ----------------
 
     area_scan = ft.Container(
-        height=220,
-        border_radius=25,
-        bgcolor="#F3F4F6",
+        height=240,
+        border_radius=24,
+        bgcolor="#F8FAFC",
+        border=ft.border.all(2, "#E2E8F0"),
         alignment=ft.Alignment(0, 0),
         content=ft.Column(
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             alignment=ft.MainAxisAlignment.CENTER,
+            spacing=15,
             controls=[
-                ft.Icon(ft.Icons.QR_CODE, size=50, color="#9CA3AF"),
-                ft.Text("Scanner Browser Ativo", size=16, weight="bold", color="#4B5563"),
-                status
+                ft.Container(
+                    padding=20,
+                    border_radius=50,
+                    bgcolor="#EEF2FF",
+                    content=ft.Icon(ft.Icons.QR_CODE_SCANNER, size=40, color="#6366F1"),
+                ),
+                ft.Column([
+                    ft.Text("PRONTO PARA SCAN", size=14, weight="w700", color="#1E293B"),
+                    status,
+                ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=5),
             ]
         )
     )
@@ -98,20 +104,20 @@ async def tela_scan(evento, contador, porcento, mural, page, abrir_evento):
             alignment=ft.MainAxisAlignment.CENTER,
             controls=[
                 ft.Icon(ft.Icons.CAMERA_ALT, color="white", size=20),
-                ft.Text("Abrir Câmera no Navegador", color="white", weight="bold")
+                ft.Text("ABRIR SCANNER NO NAVEGADOR", color="white", weight="w700", size=14)
             ]
         ),
-        bgcolor="#5EEAD4",
+        bgcolor="#6366F1",
         style=ft.ButtonStyle(
-            shape=ft.RoundedRectangleBorder(radius=25),
-            padding=15,
+            shape=ft.RoundedRectangleBorder(radius=16),
+            padding=20,
+            elevation=10,
+            shadow_color="#00000022"
         ),
-        # A propriedade 'url' é nativa para abrir links em novas abas
+
         url=f"scanner.html?evento_id={evento['id']}",
         on_click=iniciar_leitura
     )
-
-
 
     return ft.Stack([
         fundo(),
@@ -120,56 +126,48 @@ async def tela_scan(evento, contador, porcento, mural, page, abrir_evento):
             expand=True,
             alignment=ft.Alignment(0, 0),
             content=ft.Container(
-                width=350,
-                padding=25,
-                border_radius=30,
-                bgcolor="white",
+                width=380,
+                padding=35,
+                border_radius=32,
+                bgcolor="#FFFFFF",
                 shadow=ft.BoxShadow(
-                    blur_radius=25,
-                    color="#12000000",
-                    offset=ft.Offset(0, 10)
+                    blur_radius=50,
+                    color="#0000001A",
+                    offset=ft.Offset(0, 20)
                 ),
                 content=ft.Column(
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    spacing=25,
                     controls=[
-
-                        botao_voltar(voltar),
-
-                        ft.Text(
-                            "MMPass",
-                            size=26,
-                            weight="bold",
-                            color="#8B5CF6"
+                        ft.Row(
+                            alignment=ft.MainAxisAlignment.START,
+                            controls=[botao_voltar(voltar)],
                         ),
 
-                        ft.Text(
-                            "Leitor de QR Code",
-                            size=14,
-                            color="#6B7280"
-                        ),
+                        ft.Column([
+                            ft.Text("MMPass", size=32, weight="w800", color="#6366F1"),
+                            ft.Text("VALIDAÇÃO DE ACESSO", size=11, color="#94A3B8", weight="w700"),
+                        ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=2),
 
                         ft.Text(
-                            "A verificação agora é feita via navegador para maior compatibilidade.",
-                            size=11,
-                            color="#9CA3AF",
-                            text_align="center"
+                            "A verificação agora é feita via navegador para maior estabilidade e performance.",
+                            size=12,
+                            color="#64748B",
+                            text_align="center",
+                            weight="w500"
                         ),
 
                         area_scan,
 
                         botao_scan,
 
-                        ft.Text("ou", size=12, color="grey"),
-
                         ft.Container(
-                            padding=10,
-                            border_radius=20,
-                            border=ft.border.all(1, "#D1D5DB"),
+                            padding=ft.padding.symmetric(vertical=10),
                             content=ft.Row(
                                 alignment=ft.MainAxisAlignment.CENTER,
                                 controls=[
-                                    ft.Icon(ft.Icons.IMAGE, size=16, color="#6B7280"),
-                                    ft.Text("Selecionar da Galeria", size=12)
+                                    ft.Icon(ft.Icons.IMAGE, size=16, color="#94A3B8"),
+                                    ft.Text("Carregar da Galeria", size=13, color="#94A3B8", weight="w600")
                                 ]
                             )
                         )

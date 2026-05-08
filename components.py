@@ -15,29 +15,38 @@ def fundo():
             gradient=ft.LinearGradient(
                 begin=ft.Alignment(-1, -1),
                 end=ft.Alignment(1, 1),
-                colors=["#D1F5F7", "#F2E9F3"],
+                colors=["#D1F5F7", "#F2E9F3"], # Cores claras originais
             ),
         ),
         ft.Container(width=400, height=400, bgcolor="#90E0EF",
-                        border_radius=200, left=-150, top=-100, opacity=0.3),
+                        border_radius=200, left=-150, top=-100, opacity=0.3, blur=ft.Blur(50, 50)),
         ft.Container(width=350, height=350, bgcolor="#C8B6FF",
-                        border_radius=175, right=-120, top=100, opacity=0.3),
-        ft.Container(width=300, height=300, bgcolor="#FFD6FF",
-                        border_radius=150, left=40, bottom=-80, opacity=0.3),
+                        border_radius=175, right=-120, top=100, opacity=0.3, blur=ft.Blur(50, 50)),
     ])
+
+
 
 # -------------------------
 # BOTÕES
 # -------------------------
 def botao_gradiente(texto, funcao):
     return ft.Container(
-        height=50,
-        border_radius=20,
+        height=54,
+        border_radius=16,
         alignment=ft.Alignment(0, 0),
-        gradient=ft.LinearGradient(colors=["#5EEAD4", "#A78BFA"]),
-        content=ft.Text(texto, color="white", weight="w600"),
+        gradient=ft.LinearGradient(colors=["#5EEAD4", "#A78BFA"]), # Cores vibrantes
+        shadow=ft.BoxShadow(
+            blur_radius=15,
+            color="#00000022", # Sombra cinza neutra
+            offset=ft.Offset(0, 5)
+        ),
+
+        animate=ft.Animation(300, ft.AnimationCurve.DECELERATE),
+        content=ft.Text(texto, color="white", weight="w700", size=16),
         on_click=funcao
     )
+
+
 
 def botao_voltar(funcao):
     return ft.Container(

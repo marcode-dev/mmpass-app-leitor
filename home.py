@@ -28,40 +28,50 @@ async def tela_home(page, abrir_evento, logout):
 
         lista.controls.append(
             ft.Container(
-                padding=12,
-                border_radius=20,
-                bgcolor="white",
+                padding=16,
+                border_radius=22,
+                bgcolor="#FFFFFF",
                 shadow=ft.BoxShadow(
-                    blur_radius=10,
-                    color="#10000000",
+                    blur_radius=20,
+                    color="#0000000D",
                     offset=ft.Offset(0, 4)
                 ),
                 on_click=on_evento_click,
+                animate=ft.Animation(200, ft.AnimationCurve.EASE_OUT),
                 content=ft.Row(
-                    spacing=10,
+                    spacing=15,
                     controls=[
-                        ft.Image(
-                            src=e.get("imagem") or "https://via.placeholder.com/60",
-                            width=60,
-                            height=60,
-                            fit=ft.BoxFit.COVER
+                        ft.Container(
+                            width=64,
+                            height=64,
+                            border_radius=16,
+                            content=ft.Image(
+                                src=e.get("imagem") or "https://via.placeholder.com/64",
+                                fit=ft.BoxFit.COVER,
+                                border_radius=16
+                            )
                         ),
+
                         ft.Column(
-                            spacing=2,
+                            expand=True,
+                            spacing=4,
                             controls=[
-                                ft.Text(e["nome"], weight="bold", size=14),
+                                ft.Text(e["nome"], weight="w700", size=16, color="#1E293B"),
+                                ft.Row([
+                                    ft.Icon(ft.Icons.CALENDAR_MONTH, size=14, color="#64748B"),
+                                    ft.Text(e["data"], size=12, color="#64748B"),
+                                    ft.Icon(ft.Icons.LOCATION_ON, size=14, color="#64748B"),
+                                    ft.Text(e["local"], size=12, color="#64748B"),
+                                ], spacing=5),
                                 ft.Text(
-                                    f'{e["data"]} • {e["local"]}',
-                                    size=11,
-                                    color="grey"
-                                ),
-                                ft.Text(
-                                    f'R$ {e["preco"]}',
-                                    size=12,
-                                    color="#EF4444"
+                                    f'A partir de R$ {e["preco"]}',
+                                    size=13,
+                                    weight="w600",
+                                    color="#6366F1"
                                 )
                             ]
-                        )
+                        ),
+                        ft.Icon(ft.Icons.CHEVRON_RIGHT, color="#CBD5E1")
                     ]
                 )
             )
@@ -75,45 +85,50 @@ async def tela_home(page, abrir_evento, logout):
 
         ft.Container(
             expand=True,
-            padding=20,
+            padding=ft.padding.only(top=50, left=20, right=20, bottom=20),
             content=ft.Column(
                 expand=True,
-                spacing=15,
+                spacing=25,
                 controls=[
 
-                    # 🔥 HEADER COM LOGOUT
+                    # 🔥 HEADER PREMIUM
                     ft.Row(
                         alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
                         controls=[
                             ft.Column(
-                                spacing=2,
+                                spacing=4,
                                 controls=[
                                     ft.Text(
-                                        f"Olá, {nome}",
-                                        size=20,
-                                        weight="bold"
+                                        f"Bem-vindo,",
+                                        size=14,
+                                        color="#94A3B8",
+                                        weight="w500"
                                     ),
                                     ft.Text(
-                                        "Seus eventos",
-                                        size=14,
-                                        color="grey"
+                                        nome,
+                                        size=28,
+                                        weight="w800",
+                                        color="#1E293B"
                                     ),
                                 ]
                             ),
 
                             ft.Container(
-                                padding=ft.padding.symmetric(horizontal=12, vertical=6),
-                                border_radius=20,
+                                padding=ft.padding.all(12),
+                                border_radius=15,
                                 bgcolor="#FEE2E2",
                                 on_click=on_logout_click,
-                                content=ft.Text(
-                                    "Sair",
-                                    color="red",
-                                    weight="bold"
-                                )
+                                content=ft.Icon(ft.Icons.LOGOUT, color="#EF4444", size=20)
                             )
+
                         ]
                     ),
+
+
+
+                    
+                    ft.Text("Eventos sob sua gestão", size=14, color="#94A3B8", weight="w600"),
 
                     # 📋 LISTA
                     lista
@@ -121,6 +136,7 @@ async def tela_home(page, abrir_evento, logout):
             )
         )
     ])
+
 
     # Se viemos de um scan, abre o evento automaticamente
     try:

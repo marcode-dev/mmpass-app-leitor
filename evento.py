@@ -10,10 +10,10 @@ async def tela_evento(evento, page, abrir_evento, ir_home):
     capacidade = evento.get("capacidade", 100)
 
     # Labels formatadas
-    contador = ft.Text(str(total), size=24, weight="bold", color="#1F2937")
-    porcento = ft.Text(f"{int((total/capacidade)*100)}%", size=24, weight="bold", color="#1F2937")
+    contador = ft.Text(str(total), size=24, weight="w800", color="#1E293B")
+    porcento = ft.Text(f"{int((total/capacidade)*100)}%", size=24, weight="w800", color="#6366F1")
     
-    mural = ft.Column(spacing=5)
+    mural = ft.Column(spacing=8)
 
     async def on_back(e):
         await ir_home(page)
@@ -25,19 +25,18 @@ async def tela_evento(evento, page, abrir_evento, ir_home):
 
     # Card Centralizado
     card_evento = ft.Container(
-        width=350,
-        padding=25,
+        width=400,
+        padding=30,
         border_radius=30,
         bgcolor="#FFFFFF",
         shadow=ft.BoxShadow(
-            blur_radius=25,
-            color="#12000000",
-            offset=ft.Offset(0, 8)
+            blur_radius=40,
+            color="#0000001A",
+            offset=ft.Offset(0, 10)
         ),
         content=ft.Column(
-            tight=True,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            spacing=20,
+            spacing=25,
             controls=[
                 # Cabeçalho com botão voltar
                 ft.Row(
@@ -45,60 +44,76 @@ async def tela_evento(evento, page, abrir_evento, ir_home):
                     controls=[botao_voltar(on_back)]
                 ),
                 
-                # Título do Evento
-                ft.Text(evento["nome"], size=28, weight="w700", color="#8B5CF6", text_align="center"),
-                
-                # Imagem com bordas arredondadas (estilo banner)
-                ft.Container(
-                    content=ft.Image(
-                        src=evento.get("imagem"), 
-                        height=160, 
-                        fit=ft.BoxFit.COVER,
-                        border_radius=15
-                    ),
-                    border_radius=15,
+                # Banner e Título
+                ft.Column(
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    spacing=12,
+                    controls=[
+                        ft.Container(
+                            width=100,
+                            height=100,
+                            border_radius=22,
+                            content=ft.Image(
+                                src=evento.get("imagem") or "https://via.placeholder.com/100",
+                                fit=ft.BoxFit.COVER,
+                                border_radius=22
+                            ),
+                            shadow=ft.BoxShadow(blur_radius=20, color="#00000011")
+                        ),
+
+                        ft.Text(evento["nome"], size=28, weight="w800", color="#1E293B", text_align="center"),
+                        ft.Row(
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            controls=[
+                                ft.Icon(ft.Icons.CALENDAR_MONTH, size=16, color="#64748B"),
+                                ft.Text(evento["data"], size=14, color="#64748B"),
+                                ft.Container(width=10),
+                                ft.Icon(ft.Icons.LOCATION_ON, size=16, color="#64748B"),
+                                ft.Text(evento["local"], size=14, color="#64748B"),
+                            ]
+                        )
+                    ]
                 ),
 
-                # Grid de Informações (Ingressos | Ocupação | Status)
+                # Estatísticas
                 ft.Container(
-                    padding=15,
+                    padding=20,
+                    border_radius=22,
                     bgcolor="#F8FAFC",
-                    border_radius=20,
                     content=ft.Row(
-                        alignment=ft.MainAxisAlignment.SPACE_EVENLY,
+                        alignment=ft.MainAxisAlignment.SPACE_AROUND,
                         controls=[
-                            ft.Column([ft.Text("Ingressos", size=11, color="#64748B"), contador], horizontal_alignment="center"),
-                            ft.VerticalDivider(color="#E2E8F0"),
-                            ft.Column([ft.Text("Ocupação", size=11, color="#64748B"), porcento], horizontal_alignment="center"),
+                            ft.Column([
+                                ft.Text("PRESENTES", size=10, color="#94A3B8", weight="w700"),
+                                contador,
+                            ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=2),
                             ft.VerticalDivider(color="#E2E8F0"),
                             ft.Column([
-                                ft.Text("Status", size=11, color="#64748B"), 
-                                ft.Text("Ativo", size=16, weight="bold", color="#10B981")
-                            ], horizontal_alignment="center"),
+                                ft.Text("CAPACIDADE", size=10, color="#94A3B8", weight="w700"),
+                                ft.Text(str(evento["capacidade"]), size=24, weight="w800", color="#1E293B"),
+                            ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=2),
+                            ft.VerticalDivider(color="#E2E8F0"),
+                            ft.Column([
+                                ft.Text("OCUPAÇÃO", size=10, color="#94A3B8", weight="w700"),
+                                porcento,
+                            ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=2),
                         ]
                     )
                 ),
 
-                # Botão de Ação Principal
-                botao_gradiente("Iniciar Leitura", ir_scan),
+                # Mural
+                ft.Column([
+                    ft.Text("ÚLTIMAS ENTRADAS", size=11, weight="w700", color="#94A3B8"),
+                    ft.Column([mural], height=100, scroll="auto")
+                ], spacing=10, horizontal_alignment=ft.CrossAxisAlignment.CENTER),
 
-                # Lista de entradas recentes
-                ft.Column(
-                    controls=[
-                        ft.Text("Entradas Recentes", size=14, weight="bold", color="#4B5563"),
-                        ft.Container(
-                            content=mural,
-                            height=100, # Limita altura para não quebrar o layout
-                            padding=5
-                        )
-                    ]
-                )
+                botao_gradiente("Iniciar Leitura", ir_scan)
             ]
         )
     )
 
     layout = ft.Stack([
-        fundo(), # Mantém o fundo de bolhas consistente
+        fundo(),
         ft.Container(
             expand=True,
             alignment=ft.Alignment(0, 0),
@@ -117,6 +132,4 @@ async def tela_evento(evento, page, abrir_evento, ir_home):
     if q_code and str(q_ev_id) == str(evento["id"]):
         await ir_scan(None)
 
-
     return layout
-
