@@ -2,8 +2,8 @@ import requests
 import bcrypt
 import os
 
-BASE_URL = os.getenv("BASE_URL")
-API_KEY = os.getenv("API_KEY")
+BASE_URL = "https://dszzjdzferfxnbfthdmi.supabase.co/rest/v1"
+API_KEY = "sb_publishable_rEJ5evi0QT8-caj7ezGkmw_nZ9EUmvS"
 
 HEADERS = {
     "apikey": API_KEY,
