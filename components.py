@@ -50,7 +50,7 @@ def botao_gradiente(texto, funcao):
 
 def botao_voltar(funcao):
     return ft.Container(
-        padding=ft.padding.symmetric(horizontal=12, vertical=6),
+        padding=ft.Padding(12, 6, 12, 6),
         border_radius=20,
         bgcolor="#E0F2FE",
         on_click=funcao,

@@ -85,7 +85,7 @@ async def tela_home(page, abrir_evento, logout):
 
         ft.Container(
             expand=True,
-            padding=ft.padding.only(top=50, left=20, right=20, bottom=20),
+            padding=ft.Padding(20, 50, 20, 20),
             content=ft.Column(
                 expand=True,
                 spacing=25,
@@ -115,7 +115,7 @@ async def tela_home(page, abrir_evento, logout):
                             ),
 
                             ft.Container(
-                                padding=ft.padding.all(12),
+                                padding=12,
                                 border_radius=15,
                                 bgcolor="#FEE2E2",
                                 on_click=on_logout_click,

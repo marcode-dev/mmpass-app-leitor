@@ -78,7 +78,7 @@ async def tela_scan(evento, contador, porcento, mural, page, abrir_evento):
         height=240,
         border_radius=24,
         bgcolor="#F8FAFC",
-        border=ft.border.all(2, "#E2E8F0"),
+        border=ft.Border.all(2, "#E2E8F0"),
         alignment=ft.Alignment(0, 0),
         content=ft.Column(
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -162,7 +162,7 @@ async def tela_scan(evento, contador, porcento, mural, page, abrir_evento):
                         botao_scan,
 
                         ft.Container(
-                            padding=ft.padding.symmetric(vertical=10),
+                            padding=ft.Padding(0, 10, 0, 10),
                             content=ft.Row(
                                 alignment=ft.MainAxisAlignment.CENTER,
                                 controls=[
