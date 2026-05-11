@@ -138,6 +138,9 @@ def validar_qr(codigo, evento_id):
             timeout=10
         )
         
+        print(f"DEBUG Patch Status: {patch_response.status_code}")
+        print(f"DEBUG Patch Response: {patch_response.text}")
+        
         if patch_response.status_code not in [200, 204]:
             return {
                 "status": "erro",
