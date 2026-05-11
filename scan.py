@@ -56,7 +56,6 @@ async def tela_scan(evento, contador, porcento, mural, page, abrir_evento):
         status.value = "Abrindo câmera..."
         status.color = "#6B7280"
         page.update()
-        page.launch_url(f"scanner.html?evento_id={evento['id']}")
 
     # ---------------------------------------------------------
     # LÓGICA DE RETORNO VIA URL (COMPATIBILIDADE)
@@ -115,6 +114,7 @@ async def tela_scan(evento, contador, porcento, mural, page, abrir_evento):
             elevation=10,
             shadow_color="#00000022"
         ),
+        url=f"scanner.html?evento_id={evento['id']}",
         on_click=iniciar_leitura
     )
 
