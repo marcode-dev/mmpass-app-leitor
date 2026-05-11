@@ -20,11 +20,25 @@ async def logout(page):
     conteudo.controls.append(tela_login(page, ir_home))
     page.update()
 
-async def abrir_evento(ev, page, auto_code=None):
-    from scan import tela_scan
-    # Se tiver auto_code, a tela_scan vai processar na inicialização (via query)
+async def abrir_evento(ev, page):
+    from evento import tela_evento
     conteudo.controls.clear()
     conteudo.controls.append(await tela_evento(ev, page, abrir_evento, ir_home))
+    page.update()
+
+async def abrir_scan_direto(ev, page, code):
+    from scan import tela_scan
+    # Primeiro carregamos a estrutura do evento para ter as referências de UI
+    from evento import tela_evento
+    # Criamos a tela de evento mas não a exibimos ainda, apenas para pegar os componentes
+    # Na verdade, é melhor ir para a tela de evento e de lá para o scan
+    conteudo.controls.clear()
+    # Mockando os componentes que o scan precisa
+    contador = ft.Text("...", size=24, weight="w800", color="#1E293B")
+    porcento = ft.Text("...%", size=24, weight="w800", color="#6366F1")
+    mural = ft.Column(spacing=8)
+    from scan import tela_scan
+    conteudo.controls.append(await tela_scan(ev, contador, porcento, mural, page, abrir_evento))
     page.update()
 
 async def main(page: ft.Page):
@@ -58,9 +72,14 @@ async def main(page: ft.Page):
         evento_id = None
 
     if usuario_logado:
-
         if code and evento_id:
-            await ir_home(page)
+            from services.api import get_eventos
+            eventos = get_eventos(usuario_logado["id"])
+            evento = next((e for e in eventos if str(e["id"]) == str(evento_id)), None)
+            if evento:
+                await abrir_scan_direto(evento, page, code)
+            else:
+                await ir_home(page)
         else:
             await ir_home(page)
     else:

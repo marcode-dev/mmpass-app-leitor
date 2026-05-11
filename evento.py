@@ -121,15 +121,4 @@ async def tela_evento(evento, page, abrir_evento, ir_home):
         )
     ])
 
-    # Se viemos de um scan redirecionado, abre a tela de scan automaticamente
-    try:
-        q_code = page.query.get("code") if hasattr(page.query, "get") else None
-        q_ev_id = page.query.get("evento_id") if hasattr(page.query, "get") else None
-    except:
-        q_code = None
-        q_ev_id = None
-
-    if q_code and str(q_ev_id) == str(evento["id"]):
-        await ir_scan(None)
-
     return layout

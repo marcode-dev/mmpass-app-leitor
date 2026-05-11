@@ -85,13 +85,21 @@ def validar_qr(codigo, evento_id):
             headers=HEADERS,
             timeout=10
         )
+        
+        print(f"DEBUG Validar: {url}")
+        print(f"DEBUG Status: {response.status_code}")
+
+        if response.status_code != 200:
+            return {"status": "erro", "msg": f"Erro API: {response.status_code}"}
 
         dados = response.json()
+        print(f"DEBUG Dados: {dados}")
+
         # Não encontrado
         if not dados:
             return {
                 "status": "erro",
-                "msg": "Ingresso inválido"
+                "msg": "Ingresso inválido ou token expirado"
             }
         ingresso = dados[0]
         

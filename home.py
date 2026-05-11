@@ -138,18 +138,5 @@ async def tela_home(page, abrir_evento, logout):
     ])
 
 
-    # Se viemos de um scan, abre o evento automaticamente
-    try:
-        ev_id_query = page.query.get("evento_id") if hasattr(page.query, "get") else None
-    except:
-        ev_id_query = None
-        
-    if ev_id_query:
-        for e in eventos:
-            if str(e["id"]) == str(ev_id_query):
-                # Abre o evento que estávamos escaneando
-                await abrir_evento(e, page)
-                break
-                
     return layout
 
