@@ -93,24 +93,66 @@
             alert("AVISO: A câmera pode não abrir porque você não está usando uma conexão segura (HTTPS). Se estiver no Render, certifique-se de acessar via https://");
         }
 
-        function onScanSuccess(decodedText, decodedResult) {
+        async function onScanSuccess(decodedText, decodedResult) {
             if (isScanned) return;
             isScanned = true;
 
             const statusEl = document.getElementById('status');
             statusEl.style.display = 'block';
-            statusEl.innerText = "✔ Código lido! Validando ingresso...";
-            
-            // Redireciona de volta para o app Flet passando o código e o ID do evento
-            // Lógica robusta para encontrar a raiz do app (removendo assets/scanner.html do path)
-            const currentPath = window.location.pathname;
-            const basePath = currentPath.substring(0, currentPath.lastIndexOf('/assets/')) || "";
-            const backUrl = window.location.origin + basePath + "/?code=" + encodeURIComponent(decodedText) + "&evento_id=" + eventoId;
-            
-            setTimeout(() => {
-                window.location.href = backUrl;
-            }, 600);
+            statusEl.innerText = "⏳ Validando ingresso no banco...";
 
+            // Configurações do Supabase (Sincronizadas com o App)
+            const BASE_URL = "https://dszzjdzferfxnbfthdmi.supabase.co/rest/v1";
+            const API_KEY = "sb_publishable_rEJ5evi0QT8-caj7ezGkmw_nZ9EUmvS";
+
+            try {
+                // 1. Primeiro verificamos se o ingresso existe e não foi usado
+                const checkUrl = `${BASE_URL}/ingressos?codigo=eq.${encodeURIComponent(decodedText)}&evento_id=eq.${eventoId}&select=id,usado`;
+                const checkRes = await fetch(checkUrl, {
+                    headers: { "apikey": API_KEY, "Authorization": `Bearer ${API_KEY}` }
+                });
+                const ingressos = await checkRes.json();
+
+                if (!ingressos || ingressos.length === 0) {
+                    alert("❌ ERRO: Ingresso não encontrado para este evento.");
+                    window.location.reload(); // Reinicia scanner
+                    return;
+                }
+
+                if (ingressos[0].usado) {
+                    alert("⚠️ AVISO: Este ingresso já foi utilizado!");
+                    window.close();
+                    return;
+                }
+
+                // 2. Marca como usado
+                const updateUrl = `${BASE_URL}/ingressos?id=eq.${ingressos[0].id}`;
+                const patchRes = await fetch(updateUrl, {
+                    method: "PATCH",
+                    headers: { 
+                        "apikey": API_KEY, 
+                        "Authorization": `Bearer ${API_KEY}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ usado: true })
+                });
+
+                if (patchRes.ok) {
+                    statusEl.innerText = "✅ SUCESSO! Ingresso Validado.";
+                    statusEl.style.background = "#DCFCE7";
+                    statusEl.style.color = "#15803D";
+                    
+                    alert("✅ INGRESSO VALIDADO COM SUCESSO!");
+                    window.close(); // Tenta fechar a aba
+                } else {
+                    throw new Error("Erro na atualização");
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert("❌ Erro ao conectar com o banco de dados.");
+                window.location.reload();
+            }
         }
 
 
