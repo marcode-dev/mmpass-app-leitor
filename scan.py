@@ -158,18 +158,7 @@ async def tela_scan(evento, contador, porcento, mural, page, abrir_evento):
 
                         area_scan,
 
-                        botao_scan,
-
-                        ft.Container(
-                            padding=ft.Padding(0, 10, 0, 10),
-                            content=ft.Row(
-                                alignment=ft.MainAxisAlignment.CENTER,
-                                controls=[
-                                    ft.Icon(ft.Icons.IMAGE, size=16, color="#94A3B8"),
-                                    ft.Text("Carregar da Galeria", size=13, color="#94A3B8", weight="w600")
-                                ]
-                            )
-                        )
+                        botao_scan
                     ]
                 )
             )
