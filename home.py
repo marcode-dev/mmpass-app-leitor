@@ -10,6 +10,7 @@ async def tela_home(page, abrir_evento, logout):
     from state import usuario_logado
     eventos = get_eventos(usuario_logado["id"])
     nome = usuario_logado.get("nome", "Usuário")
+    page.scroll = ft.ScrollMode.AUTO
 
     lista = ft.Column(
         scroll="auto",
@@ -139,4 +140,4 @@ async def tela_home(page, abrir_evento, logout):
 
 
     return layout
-
+

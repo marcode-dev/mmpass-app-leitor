@@ -46,6 +46,7 @@ async def main(page: ft.Page):
     page.padding = 0
     page.spacing = 0
     page.theme_mode = ft.ThemeMode.LIGHT
+    page.scroll = None
 
     # -------------------------
     # RESTAURAR SESSÃO
@@ -95,4 +96,4 @@ try:
 except Exception:
     import flet.app
     ft.run(main, assets_dir="assets")
-
+
